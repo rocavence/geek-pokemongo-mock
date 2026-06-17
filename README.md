@@ -1,74 +1,46 @@
-# 2025 小米8 Pokémon GO 飛人安全方案
+# 老手機通過 Play Integrity 自救指南
 
-一個現代化的 Apple macOS 風格網頁，展示小米8 Android 10 的 Pokémon GO 相關技術指南。
+一個 macOS 風格的靜態單頁，整理「root / 改機的舊手機如何重新通過 **Play Integrity**」，好讓銀行、Google 錢包、串流等正常 App 在自訂 ROM / root 環境下還能用。2026 版。
 
-## 🌟 特色功能
+> **範圍**：只處理通過認證 / 隱藏 root 這一層，目的是自用 App 能跑。**不含** GPS 假定位或繞過任何遊戲反作弊。針對自己的裝置、合法改機。
 
-- 🍎 **Apple macOS 設計風格**: 採用蘋果官方設計語言
-- 📱 **響應式設計**: 完美適配桌面、平板和手機
-- 🔍 **即時搜尋**: 快速找到所需內容
-- 🌙 **深色模式**: 支援明暗模式切換
-- 📋 **一鍵複製**: 程式碼區塊快速複製功能
-- 🔗 **平滑導航**: 流暢的頁面內跳轉
+目標機型：小米8（Android 10）、小米11 Lite 5G NE（Android 13）。
 
-## 🚀 線上預覽
+## 線上
 
-訪問 GitHub Pages: [https://rocavence.github.io/geek-pokemongo-mock](https://rocavence.github.io/geek-pokemongo-mock)
+GitHub Pages：https://rocavence.github.io/geek-pokemongo-mock/
 
-## 📦 本地運行
+## 重點（2026 現況）
+
+- SafetyNet 已退役，全看 Play Integrity 三級：`BASIC` / `DEVICE` / `STRONG`。多數銀行只要 BASIC。
+- 2025/5 起 `DEVICE` 在 **Android 13+ 要求 bootloader 上鎖訊號** → A13 要 DEVICE 得靠 TrickyStore + 有效 keybox；A12 以下不受此限。
+- 真正瓶頸是 keybox（OEM 外洩、會被持續撤銷）。先試「只過 BASIC」最省。
+
+## 本地運行
 
 ```bash
-# 克隆專案
 git clone https://github.com/rocavence/geek-pokemongo-mock.git
-
-# 進入目錄
 cd geek-pokemongo-mock
-
-# 使用任何靜態服務器運行，例如：
-python -m http.server 8000
-# 或
-npx serve .
+python3 -m http.server 8000   # 開 http://localhost:8000
 ```
 
-然後在瀏覽器中打開 `http://localhost:8000`
-
-## 🛠 技術棧
-
-- **HTML5**: 語義化標記
-- **CSS3**: Flexbox, Grid, CSS Variables
-- **Vanilla JavaScript**: 純 JS 實現互動功能
-- **GitHub Pages**: 自動部署
-- **GitHub Actions**: CI/CD 工作流程
-
-## 📁 專案結構
+## 結構
 
 ```
 geek-pokemongo-mock/
-├── index.html          # 主頁面
-├── style.css           # 樣式文件
-├── script.js           # 腳本文件
-├── README.md           # 專案說明
-└── .github/
-    └── workflows/
-        └── deploy.yml  # GitHub Actions 配置
+├── index.html   # 內容（殼吃 .card / 目錄錨點 / pre 區塊）
+├── style.css    # macOS 風格樣式、深色模式
+├── script.js    # 平滑捲動、複製、搜尋、深色切換
+└── README.md
 ```
 
-## 🎨 設計特色
+## 參考
 
-- **SF Pro Display** 字體系列
-- **蘋果配色方案**: 使用 iOS/macOS 標準顏色
-- **毛玻璃效果**: backdrop-filter 實現
-- **微動畫**: 流暢的過渡效果
-- **陰影系統**: 多層次深度感
+- [Play Integrity Fork（osm0sis）](https://github.com/osm0sis/PlayIntegrityFork)
+- [Play Integrity Fix（KOWX712）](https://github.com/KOWX712/PlayIntegrityFix)
+- [TrickyStore（5ec1cff）](https://github.com/5ec1cff/TrickyStore)
+- [Tricky Store 討論串（XDA）](https://xdaforums.com/t/tricky-store-bootloader-keybox-spoofing.4683446/)
 
-## 📝 免責聲明
+## 授權
 
-本專案僅供個人學習和知識備份使用。請遵守當地法律法規和遊戲條款。
-
-## 📄 授權
-
-MIT License
-
----
-
-© 2025 個人知識備份專案
+MIT。工具皆為公開開源專案，本頁僅為個人技術筆記。

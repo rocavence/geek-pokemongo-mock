@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="light dark">
-    <title>2025 小米8 Pokémon GO 飛人安全方案</title>
+    <title>老手機通過 Play Integrity 自救指南</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -12,370 +12,140 @@
     <div class="container">
         <header class="header">
             <div class="header-content">
-                <h1>2025 小米8 Pokémon GO 飛人安全方案</h1>
-                <p class="subtitle">經典組合版 - 針對 Android 10 優化</p>
+                <h1>老手機通過 Play Integrity 自救指南</h1>
+                <p class="subtitle">讓 root / 改機的舊機重新跑得動銀行・錢包・串流 App — 2026 版</p>
             </div>
         </header>
+
+        <section class="card warning-section">
+            <h2>🎯 這份指南在幹嘛</h2>
+            <p>舊手機原廠停更後，裝自訂 ROM 補安全性更新、或 root 來除惡意預載，本身能<strong>提升</strong>安全；但解鎖 bootloader 會讓 <strong>Play Integrity</strong> 認證失敗，連帶銀行、Google 錢包、Netflix 等正常 App 拒絕啟動。這份就是把<strong>自己的裝置</strong>重新調到通過認證，好用回這些 App。</p>
+            <div class="important-note">
+                <h4>範圍與界線</h4>
+                <ul>
+                    <li>✅ 只處理「通過認證 / 隱藏 root」這一層，目的是自用 App 能跑</li>
+                    <li>✅ 你自己的裝置、合法改機</li>
+                    <li>❌ 不含 GPS 假定位、不含繞過任何遊戲反作弊（那是作弊，不在這）</li>
+                </ul>
+            </div>
+        </section>
 
         <nav class="table-of-contents">
             <h2>📋 目錄</h2>
             <ul>
-                <li><a href="#requirements">前置需求</a></li>
-                <li><a href="#step1">步驟 1: 系統準備與 Root</a></li>
-                <li><a href="#step2">步驟 2: 核心模組安裝</a></li>
-                <li><a href="#step3">步驟 3: Play Integrity 配置</a></li>
-                <li><a href="#step4">步驟 4: 隱藏與偽裝</a></li>
-                <li><a href="#step5">步驟 5: 最終測試</a></li>
+                <li><a href="#verdicts">先搞懂：三種 verdict，你要哪一個</a></li>
+                <li><a href="#devices">兩支目標機：A10 vs A13</a></li>
+                <li><a href="#stack">標準模組棧</a></li>
+                <li><a href="#basic">路線 A：只過 BASIC（最省）</a></li>
+                <li><a href="#device">路線 B：過 DEVICE（含 keybox 難題）</a></li>
+                <li><a href="#verify">驗證</a></li>
                 <li><a href="#troubleshoot">故障排除</a></li>
             </ul>
         </nav>
 
-        <section id="requirements" class="card">
-            <h2>📱 前置需求</h2>
+        <section id="verdicts" class="card">
+            <h2>先搞懂：三種 verdict</h2>
+            <p>SafetyNet 已退役，現在全看 <strong>Play Integrity API</strong> 的三級判定。<strong>先確認你的 App 到底要哪一級</strong>，再決定要做到多深 —— 多數銀行只要 BASIC。</p>
             <ul class="requirements-list">
-                <li><strong>本文章測試設備</strong>: 小米8 + MIUI Global 12.0.3.0 + 已解鎖 Bootloader</li>
-                <li><strong>電腦</strong>: Mac/Windows/Linux 已安裝 ADB</li>
-                <li><strong>USB 調試</strong>: 已開啟（設定 → 開發者選項 → USB 調試）</li>
-                <li><strong>網路</strong>: 穩定的網路連線</li>
+                <li><strong>MEETS_BASIC_INTEGRITY</strong>：裝置大致正常。多數銀行/一般 App 只查這個。純軟體模組就能過。</li>
+                <li><strong>MEETS_DEVICE_INTEGRITY</strong>：通過 Google 認證的裝置。較嚴的金融/錢包要這個。</li>
+                <li><strong>MEETS_STRONG_INTEGRITY</strong>：硬體背書（TEE）。少數高安全 App，需有效 keybox。</li>
             </ul>
-
-            <div class="code-section">
-                <h3>🛠 Mac 安裝 ADB</h3>
-                <pre><code>brew install android-platform-tools</code></pre>
-            </div>
-        </section>
-
-        <section id="step1" class="card">
-            <h2>步驟 1: 系統準備與 Root</h2>
-            
-            <h3>1.1 下載 Magisk</h3>
-            <h4>自動下載方式（推薦）</h4>
-            
-            <div class="code-section">
-                <h5>Mac/Linux</h5>
-                <pre><code>curl -s https://api.github.com/repos/topjohnwu/Magisk/releases/latest | grep browser_download_url | grep "\.apk" | cut -d '"' -f 4 | xargs curl -L -o Magisk.apk</code></pre>
-            </div>
-
-            <h4>手動下載</h4>
-            <p><strong>Magisk APK</strong>: <a href="https://github.com/topjohnwu/Magisk/releases/latest" target="_blank">https://github.com/topjohnwu/Magisk/releases/latest</a></p>
-
-            <h3>1.2 準備 Boot Image</h3>
-            <ol>
-                <li>從小米官方 ROM 提取 <code>boot.img</code></li>
-                <li>安裝 Magisk Manager APK</li>
-                <li>使用 Magisk 修補 <code>boot.img</code>（選擇 <strong>安裝</strong> → <strong>修補 Boot 映像檔</strong>）</li>
-                <li>將修補後的檔案傳送到電腦</li>
-            </ol>
-
-            <h3>1.3 刷入 Root（電腦操作）</h3>
-            <div class="code-section">
-                <pre><code># 重啟到 bootloader 模式
-adb reboot bootloader
-
-# 刷入修補後的 boot.img
-fastboot flash boot magisk_patched.img
-
-# 重啟設備
-fastboot reboot</code></pre>
-            </div>
-
-            <h3>1.4 檢查安裝完成</h3>
-            <p>重開機後打開 Magisk 查看顯示已安裝</p>
-        </section>
-
-        <section id="step2" class="card">
-            <h2>步驟 2: 核心模組安裝</h2>
-            
             <div class="warning-note">
-                <p>⚠️ <strong>安裝順序很重要！</strong> 請按照以下順序安裝，每個模組安裝後都要重啟。</p>
-            </div>
-
-            <h3>2.1 批量下載所有模組</h3>
-            
-            <h4>Mac/Linux 一鍵下載腳本</h4>
-            <div class="code-section">
-                <pre><code>#!/bin/bash
-# 提示使用者輸入下載路徑
-read -p "請輸入下載路徑 (例如 /Users/你的名稱/Desktop/magisk_modules): " DOWNLOAD_DIR
-
-# 檢查使用者是否有輸入
-if [ -z "$DOWNLOAD_DIR" ]; then
-    echo "未輸入下載路徑，腳本已退出。"
-    exit 1
-fi
-
-# 創建下載目錄
-mkdir -p "$DOWNLOAD_DIR"
-cd "$DOWNLOAD_DIR" || exit 1
-
-# 統一下載函數
-download_latest() {
-    local repo="$1"
-    local pattern="$2"
-    local output="$3"
-    echo "下載 $output..."
-    url=$(curl -s "https://api.github.com/repos/$repo/releases/latest" \
-      | grep browser_download_url \
-      | grep -i "$pattern" \
-      | cut -d '"' -f 4)
-    if [ -n "$url" ]; then
-        curl -L -o "$output" "$url"
-    else
-        echo "⚠️ 無法找到 $output 的下載連結"
-    fi
-}
-
-# 下載各模組
-download_latest "Dr-TSNG/ZygiskNext" "\.zip" "ZygiskNext.zip"
-download_latest "osm0sis/PlayIntegrityFork" "\.zip" "PlayIntegrityFork.zip"
-download_latest "5ec1cff/TrickyStore" "\.zip" "TrickyStore.zip"
-download_latest "KOWX712/Tricky-Addon-Update-Target-List" "\.zip" "TrickyAddon.zip"
-download_latest "LSPosed/LSPosed.github.io" "shamiko.*\.zip" "Shamiko.zip"
-download_latest "LSPosed/LSPosed" "zygisk-release\.zip" "LSPosed.zip"
-download_latest "Dr-TSNG/Hide-My-Applist" "\.apk" "HideMyApplist.apk"
-download_latest "auag0/HideMockLocation" "\.apk" "HideMockLocation_auag0_v1.2.1.apk"
-
-echo "所有模組下載完成！"
-ls -la</code></pre>
-            </div>
-
-            <h4>推送模組到手機（一次性操作）</h4>
-            <div class="code-section">
-                <pre><code># 創建手機下載目錄
-adb shell mkdir -p /sdcard/Download/magisk_modules
-
-# 推送所有 zip 模組
-adb push ZygiskNext.zip /sdcard/Download/magisk_modules/
-adb push PlayIntegrityFork.zip /sdcard/Download/magisk_modules/
-adb push TrickyStore.zip /sdcard/Download/magisk_modules/
-adb push TrickyAddon.zip /sdcard/Download/magisk_modules/
-adb push Shamiko.zip /sdcard/Download/magisk_modules/
-adb push LSPosed.zip /sdcard/Download/magisk_modules/
-
-# 推送 APK 檔案
-adb push HideMyApplist.apk /sdcard/Download/
-adb push HideMockLocation_auag0_v1.2.1.apk /sdcard/Download/</code></pre>
-            </div>
-
-            <h3>2.2 安裝順序（手機操作）</h3>
-            <ol class="install-order">
-                <li><strong>ZygiskNext</strong>: Magisk → 模組 → 從儲存空間安裝 → 重啟</li>
-                <li><strong>PlayIntegrityFork</strong>: Magisk → 模組 → 從儲存空間安裝 → 重啟</li>
-                <li><strong>TrickyStore</strong>: Magisk → 模組 → 從儲存空間安裝 → 重啟</li>
-                <li><strong>TrickyAddon</strong>: Magisk → 模組 → 從儲存空間安裝 → 重啟</li>
-            </ol>
-        </section>
-
-        <section id="step3" class="card">
-            <h2>步驟 3: Play Integrity 配置</h2>
-            
-            <h3>3.1 PlayIntegrityFork 設定</h3>
-            <ol>
-                <li>Magisk → 模組 → PlayIntegrityFork → <strong>動作按鈕</strong></li>
-                <li>自動產生適合 Android 10 的 fingerprint</li>
-            </ol>
-
-            <h3>3.2 TrickyStore 設定</h3>
-            <ol>
-                <li>開啟 TrickyStore 應用程式</li>
-                <li><strong>功能表</strong> → <strong>全選</strong></li>
-                <li><strong>功能表</strong> → <strong>取消選擇不必要項目</strong> → <strong>儲存</strong></li>
-                <li><strong>功能表</strong> → <strong>設定有效 Keybox</strong>
-                    <ul>
-                        <li>✅ <strong>會自動設定</strong>: TrickyStore 內建 AOSP keybox</li>
-                        <li>看到「找到有效 keybox」表示成功</li>
-                    </ul>
-                </li>
-                <li><strong>功能表</strong> → <strong>設定安全補丁</strong> → <strong>取得安全補丁日期</strong> → <strong>儲存</strong></li>
-            </ol>
-
-            <h3>3.3 清除 Google 服務</h3>
-            <div class="code-section">
-                <pre><code># 電腦協助清除（推薦）
-adb shell pm clear com.google.android.gms
-adb shell pm clear com.android.vending
-adb shell pm clear com.google.android.gsf</code></pre>
+                <p>⚠️ <strong>2025/5 起的關鍵規則</strong>：<code>DEVICE</code> 在 <strong>Android 13+ 要求「bootloader 已上鎖」訊號</strong>。root 必須解鎖 → A13 想拿 DEVICE 得靠 TrickyStore 偽裝上鎖 + 有效 keybox。A12 以下不受此限，DEVICE 好拿很多。</p>
             </div>
         </section>
 
-        <section id="step4" class="card">
-            <h2>步驟 4: 隱藏與偽裝</h2>
-            
-            <h3>4.1 預先安裝GPS應用（但不配置）</h3>
-            <p><strong>安裝GPS模擬應用:</strong></p>
-            <div class="code-section">
-                <pre><code># 安裝推薦的 GPS 應用
-adb install /sdcard/Download/FakeGPS_Location_GPS_JoyStick.apk</code></pre>
-            </div>
-            
-            <div class="important-note">
-                <h4>重要注意事項:</h4>
-                <ul>
-                    <li>✅ 僅安裝，不要開啟</li>
-                    <li>✅ 不要設置為模擬位置應用</li>
-                    <li>✅ 不要進行任何配置</li>
-                    <li>❌ 避免在開發者選項中選擇它</li>
-                </ul>
-            </div>
-
-            <h3>4.2 Shamiko (Root 隱藏)</h3>
-            <p><strong>安裝與配置:</strong></p>
-            <div class="code-section">
-                <pre><code># 安裝Shamiko模組
-Magisk → 模組 → 從儲存空間安裝 Shamiko.zip → 重啟</code></pre>
-            </div>
-            
-            <p><strong>配置設定:</strong></p>
-            <ol>
-                <li>Magisk → 設定 → <strong>強制執行拒絕清單</strong>: ❌ 保持關閉</li>
-                <li><strong>配置拒絕清單</strong> → 勾選以下項目：
-                    <ul>
-                        <li>✅ Pokémon GO (所有子項目)</li>
-                        <li>✅ Google Play Services</li>
-                        <li>✅ Google Play Store</li>
-                        <li>✅ 你的GPS模擬應用程式 (重要！)</li>
-                    </ul>
-                </li>
-            </ol>
-
-            <h3>4.3 LSPosed + 應用程式隱藏</h3>
-            
-            <h4>4.3.1 LSPosed 安裝:</h4>
-            <div class="code-section">
-                <pre><code># 安裝LSPosed模組
-Magisk → 模組 → 從儲存空間安裝 LSPosed.zip → 重啟</code></pre>
-            </div>
-
-            <h4>4.3.2 HideMyApplist (HMA) - 應用程式清單隱藏:</h4>
-            <div class="code-section">
-                <pre><code># 安裝HMA
-adb install /sdcard/Download/HideMyApplist.apk</code></pre>
-            </div>
-            
-            <p><strong>設定:</strong></p>
-            <ol>
-                <li>LSPosed Manager → 模組 → Hide My Applist → ✅ 啟用</li>
-                <li>✅ 勾選 <strong>Pokémon GO</strong></li>
-                <li>在HMA中隱藏以下應用：
-                    <ul>
-                        <li>Magisk Manager</li>
-                        <li>GPS模擬應用程式</li>
-                        <li>PGTools</li>
-                        <li>Pokemod</li>
-                        <li>其他Root工具</li>
-                    </ul>
-                </li>
-            </ol>
-
-            <h4>4.3.3 Hide Mock Location (HML) - 模擬位置隱藏:</h4>
-            <div class="code-section">
-                <pre><code># 安裝HML auag0 版本
-adb install /sdcard/Download/HideMockLocation_auag0_v1.2.1.apk</code></pre>
-            </div>
-            
-            <p><strong>設定:</strong></p>
-            <ol>
-                <li>LSPosed Manager → 模組 → Hide Mock Location → ✅ 啟用</li>
-                <li>✅ 勾選 <strong>Pokémon GO</strong></li>
-                <li>✅ 勾選 <strong>你的GPS模擬應用程式</strong></li>
-            </ol>
-
-            <h3>4.4 GPS 模擬應用程式配置</h3>
-            
-            <h4>隱藏 Magisk:</h4>
-            <div class="code-section">
-                <pre><code># Magisk自我隱藏
-Magisk → 設定 → 隱藏Magisk應用程式</code></pre>
-            </div>
-            <ul>
-                <li>輸入偽裝名稱（例如：「系統管理員」）</li>
-                <li>等待重新封裝完成</li>
-            </ul>
-
-            <h4>推薦應用程式:</h4>
-            <ul>
-                <li><strong>Fake GPS Location - GPS JoyStick</strong>: <a href="https://play.google.com/store/apps/details?id=com.incorporateapps.fakegps_route" target="_blank">Play Store 連結</a></li>
-            </ul>
-
-            <h4>系統設置:</h4>
-            <ol>
-                <li><strong>開發者選項</strong> → <strong>模擬位置應用程式</strong> → 選擇你的GPS應用</li>
-                <li><strong>位置設定</strong> → <strong>模式</strong> → 僅限GPS</li>
-                <li>❌ 關閉「位置記錄」和「Google位置精確度」</li>
-            </ol>
-
-            <h4>GPS應用初始配置:</h4>
-            <ol>
-                <li>開啟GPS模擬應用</li>
-                <li>授予必要權限</li>
-                <li>進行基本設置（但暫時不要開始模擬）</li>
-            </ol>
-        </section>
-
-        <section id="step5" class="card">
-            <h2>步驟 5: 最終測試</h2>
-            
-            <h3>5.1 Play Integrity 檢查（優先使用）</h3>
-            <p><strong>期望結果</strong>:</p>
+        <section id="devices" class="card">
+            <h2>兩支目標機難度不同</h2>
             <ul class="test-results">
-                <li>✅ <code>MEETS_BASIC_INTEGRITY = PASS</code></li>
-                <li>✅ <code>MEETS_DEVICE_INTEGRITY = PASS</code> (Android 10 目標)</li>
-                <li>⚠️ <code>MEETS_STRONG_INTEGRITY = FAIL</code> (預期，需要硬體 keybox)</li>
+                <li><strong>小米8（Android 10）</strong>：不受上鎖新規卡。<code>BASIC</code> 輕鬆，<code>DEVICE</code> 多半靠 Play Integrity Fix 的指紋偽裝就到。</li>
+                <li><strong>小米11 Lite 5G NE（Android 13）</strong>：受 2025/5 規則限制。<code>BASIC</code> 輕鬆；<code>DEVICE</code> 要 TrickyStore + 一把<strong>還活著的</strong> keybox，且 keybox 被 Google 撤銷就失效，本質不穩定。</li>
             </ul>
-
-            <h3>5.2 其他檢測工具</h3>
-            <ul>
-                <li><strong>Simple Play Integrity Checker</strong>: <a href="https://play.google.com/store/apps/details?id=com.henrikherzig.playintegritychecker" target="_blank">Play Store 連結</a></li>
-                <li><strong>Play Store 內建</strong>: Play Store → 設定 → 點擊「Play Store 版本」7次 → 一般 → 開發者選項 → 驗證完整性</li>
-            </ul>
-
-            <h3>5.3 Pokémon GO 測試</h3>
-            <ol>
-                <li>啟動 GPS 模擬應用程式</li>
-                <li>設定安全的測試位置（避免跨洲跳躍）</li>
-                <li>開啟 Pokémon GO 檢查是否出現錯誤</li>
-            </ol>
         </section>
 
-        <section id="troubleshoot" class="card">
-            <h2>故障排除</h2>
-            
-            <h3>重新生成 Play Integrity 配置</h3>
+        <section id="stack" class="card">
+            <h2>標準模組棧（2026 維護中版本）</h2>
+            <ul class="requirements-list">
+                <li><strong>Magisk 28+</strong>（含 Zygisk）— root 與模組框架。<a href="https://github.com/topjohnwu/Magisk/releases/latest" target="_blank">repo</a></li>
+                <li><strong>Shamiko</strong> — 隱藏 root；DenyList 設好、但 Magisk 的「強制執行拒絕清單」要<strong>關掉</strong>讓 Shamiko 接手。<a href="https://github.com/LSPosed/LSPosed.github.io/releases" target="_blank">repo</a></li>
+                <li><strong>Play Integrity Fix（維護分支）</strong> — 過 BASIC，A10 多半也過 DEVICE。<a href="https://github.com/osm0sis/PlayIntegrityFork" target="_blank">osm0sis/PlayIntegrityFork</a> 或 <a href="https://github.com/KOWX712/PlayIntegrityFix" target="_blank">KOWX712/PlayIntegrityFix</a></li>
+                <li><strong>TrickyStore + keybox.xml</strong> — <em>只有</em> A13 要 DEVICE、或要 STRONG 才加。<a href="https://github.com/5ec1cff/TrickyStore" target="_blank">repo</a></li>
+            </ul>
+            <p>前置：已解鎖 bootloader、電腦裝好 ADB（Mac：<code>brew install android-platform-tools</code>）。</p>
+        </section>
+
+        <section id="basic" class="card">
+            <h2>路線 A：只過 BASIC（先試這條）</h2>
+            <p>很多人卡關只是因為一上來就上 keybox。<strong>先用最省的：</strong></p>
+            <ol class="install-order">
+                <li>Magisk 裝好、確認 <strong>Zygisk = 開</strong>，重啟。</li>
+                <li>裝 <strong>Play Integrity Fix</strong> 模組，重啟。</li>
+                <li>Magisk → 設定 → <strong>強制執行拒絕清單：關</strong>；裝 <strong>Shamiko</strong>，重啟。</li>
+                <li><strong>配置拒絕清單</strong>勾選會檢測的對象：Google Play 服務、Play 商店、以及你要用的那個銀行/App。</li>
+                <li>Magisk → 設定 → <strong>隱藏 Magisk 應用程式</strong>（給隨機名稱）。</li>
+            </ol>
+            <p>清一次 GMS 快取讓判定重跑：</p>
             <div class="code-section">
-                <pre><code># 重新生成 fingerprint
-adb shell su -c "cd /data/adb/modules/playintegrityfix && rm -f custom.pif.json"
-adb shell su -c "cd /data/adb/modules/playintegrityfix && ./autopif2.sh --device"</code></pre>
+                <pre><code>adb shell pm clear com.google.android.gms
+adb shell pm clear com.android.vending</code></pre>
+            </div>
+            <p>測一下（見下方驗證）。<strong>過 BASIC 且你的 App 能用 → 就停在這，不用碰 keybox。</strong></p>
+        </section>
+
+        <section id="device" class="card">
+            <h2>路線 B：要過 DEVICE</h2>
+
+            <h3>小米8（A10）</h3>
+            <p>通常路線 A 的 PIF 指紋就能順帶過 DEVICE。若沒過，重生一份指紋：</p>
+            <div class="code-section">
+                <pre><code># PlayIntegrityFork：重生 fingerprint（模組目錄名以實際為準）
+adb shell su -c "cd /data/adb/modules/playintegrityfork && rm -f custom.pif.json"
+# 再開 Magisk → 模組 → PlayIntegrityFork → 動作按鈕，重新產生</code></pre>
             </div>
 
-            <h3>檢查模組狀態</h3>
+            <h3>小米11 Lite（A13）</h3>
+            <p>受「上鎖才給 DEVICE」限制，要加 TrickyStore 偽裝上鎖 + keybox：</p>
+            <ol>
+                <li>裝 <strong>TrickyStore</strong> 模組，重啟。</li>
+                <li>放入一把<strong>有效（未被撤銷）的</strong> <code>keybox.xml</code> 到 <code>/data/adb/tricky_store/keybox.xml</code>。</li>
+                <li>設定 target 含 <code>com.google.android.gms</code> 與你的目標 App。</li>
+            </ol>
             <div class="code-section">
-                <pre><code># 檢查已安裝模組
-adb shell su -c "ls -la /data/adb/modules/"
+                <pre><code># 確認 keybox 真的放進去了（大小 &gt; 0 才算）
+adb shell su -c "ls -l /data/adb/tricky_store/keybox.xml"</code></pre>
+            </div>
+            <div class="warning-note">
+                <p>⚠️ <strong>keybox 是這條路線唯一的真瓶頸。</strong>它從 OEM 外洩、會被 Google 持續撤銷，今天能過明天可能就失效。A13 的 DEVICE 因此不保證長期穩定 —— 若你的 App 其實只要 BASIC，回路線 A 反而省心。</p>
+            </div>
+        </section>
 
-# 檢查 DenyList 狀態
+        <section id="verify" class="card">
+            <h2>驗證</h2>
+            <ul class="requirements-list">
+                <li><strong>Play Integrity API Checker</strong>（henrikherzig）：<a href="https://play.google.com/store/apps/details?id=com.henrikherzig.playintegritychecker" target="_blank">Play Store</a> —— 一眼看 BASIC / DEVICE / STRONG 各自 PASS/FAIL。</li>
+                <li><strong>Play 商店內建</strong>：Play 商店 → 設定 → 連點「Play 商店版本」7 次 → 一般 → 開發者選項 → 驗證完整性。</li>
+            </ul>
+            <p>檢查模組與日誌：</p>
+            <div class="code-section">
+                <pre><code>adb shell su -c "ls -la /data/adb/modules/"
 adb shell su -c "magisk --denylist ls"
-
-# 檢查 Play Integrity 日誌
 adb shell su -c "logcat | grep -E '(PIF|TrickyStore)'"</code></pre>
             </div>
         </section>
 
-        <section class="card warning-section">
-            <h2>⚠️ 重要安全提醒</h2>
-            <ul>
-                <li><strong>避免瞬間跨洲移動</strong>: 容易被 Niantic 檢測</li>
-                <li><strong>遵守冷卻時間</strong>: 長距離移動需等待適當時間</li>
-                <li><strong>定期更新模組</strong>: 使用上述腳本定期檢查更新</li>
-                <li><strong>謹慎測試 Play Integrity</strong>: 過度檢測可能導致設備被標記</li>
+        <section id="troubleshoot" class="card">
+            <h2>故障排除</h2>
+            <ul class="requirements-list">
+                <li><strong>BASIC 都不過</strong>：多半是 Shamiko 沒接手 —— 確認「強制執行拒絕清單」是<strong>關</strong>，且 DenyList 有勾 GMS。</li>
+                <li><strong>BASIC 過、DEVICE 不過（A10）</strong>：重生 PIF 指紋（上面指令），清 GMS 快取再測。</li>
+                <li><strong>DEVICE 不過（A13）</strong>：你的 keybox 可能已被撤銷，換一把；或確認 TrickyStore target 有含 GMS。</li>
+                <li><strong>過幾天又失效</strong>：Google 更新偵測或撤銷 keybox 是常態，更新 PIF 模組 / 換 keybox。</li>
             </ul>
-            
-            <div class="success-rate">
-                <p><strong>本方案針對 Android 10 優化，理論成功率 85%+ 達到 Device Integrity</strong></p>
-            </div>
         </section>
 
         <footer class="footer">
-            <p>© 2025 個人知識備份 - 僅供教育參考用途</p>
+            <p>© 個人技術筆記 — 自用裝置維護參考，工具皆為公開開源專案</p>
         </footer>
     </div>
 
