@@ -33,6 +33,7 @@
                     <li><a href="#verdicts">三種 verdict</a></li>
                     <li><a href="#devices">兩支目標機</a></li>
                     <li><a href="#stack">標準模組棧</a></li>
+                    <li><a href="#order">安裝順序</a></li>
                     <li><a href="#basic">路線 A：過 BASIC</a></li>
                     <li><a href="#device">路線 B：過 DEVICE</a></li>
                     <li><a href="#verify">驗證</a></li>
@@ -92,6 +93,25 @@
                     <li><strong>TrickyStore + keybox.xml</strong> — <em>只有</em> A13 要 DEVICE、或要 STRONG 才加。<a href="https://github.com/5ec1cff/TrickyStore" target="_blank" rel="noopener">repo</a></li>
                 </ul>
                 <p class="muted">前置：已解鎖 bootloader、電腦裝好 ADB（Mac：<code>brew install android-platform-tools</code>）。</p>
+            </section>
+
+            <section id="order" class="card">
+                <h2>安裝順序（從 Magisk root 開始）</h2>
+                <p>順序會影響成敗。原則：<strong>每裝一個模組就重啟一次</strong>，裝越少越穩，需要才往下加。第 1～5 步是所有人都要的底；第 6 步之後只有要 DEVICE（A13）或 STRONG 才裝。</p>
+                <ol class="steps">
+                    <li><strong>刷入 Magisk root</strong>：用 Magisk 修補官方 ROM 的 <code>boot.img</code>，<code>fastboot flash boot magisk_patched.img</code>，開機後確認 Magisk 顯示「已安裝」。</li>
+                    <li><strong>隱藏 Magisk</strong>：Magisk → 設定 → 隱藏 Magisk 應用程式（給隨機名稱），等重新封裝完成。</li>
+                    <li><strong>開 Zygisk</strong>：Magisk → 設定 → <strong>Zygisk = 開</strong> → 重啟。（用 KernelSU / APatch 而非 Magisk 才需改裝 <strong>ZygiskNext</strong>，與內建 Zygisk 二擇一。）</li>
+                    <li><strong>Shamiko</strong>：Magisk → 設定 → <strong>強制執行拒絕清單：關</strong>；<strong>配置拒絕清單</strong>勾 Google Play 服務、Play 商店、目標 App。再裝 Shamiko 模組 → 重啟。</li>
+                    <li><strong>Play Integrity Fix</strong>（osm0sis 分支）：裝模組 → 重啟 → 測 BASIC。多數人到這就夠了（接路線 A）。</li>
+                    <li><strong>TrickyStore</strong>：裝 → 重啟 → 放 <code>keybox.xml</code> 到 <code>/data/adb/tricky_store/</code>、設 target 含 <code>com.google.android.gms</code>。（A13 要 DEVICE / 任何機要 STRONG 才需要。）</li>
+                    <li><strong>Tricky-Addon + KSUWebUI</strong>（選用）：Tricky-Addon 自動連網抓 keybox；若 Magisk 內 Action 按鈕不穩或消失，改用 KSUWebUI 的獨立設定頁操作 Addon。</li>
+                    <li><strong>LSPosed Mod → Hide My Applist</strong>（選用）：裝 LSPosed Mod → 重啟 → 裝 HMA，對目標 App 隱藏 root 相關 App 清單。少數會掃 App 清單的 App 才需要。</li>
+                </ol>
+                <div class="note note--info">
+                    <p class="note-label">為什麼是這個順序</p>
+                    <p>先有 root 與隱藏（1～4）才談得上認證偽裝（5 以後）；DenyList 要在裝 Shamiko 前設好，Shamiko 才接得到。每步之間重啟，避免模組狀態沒寫定就疊下一個。</p>
+                </div>
             </section>
 
             <section id="basic" class="card">
