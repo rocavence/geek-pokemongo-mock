@@ -5,149 +5,169 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="light dark">
     <title>老手機通過 Play Integrity 自救指南</title>
+    <meta name="description" content="root / 改機的舊手機如何重新通過 Play Integrity，讓銀行・錢包・串流 App 能用。2026 版，含小米8（A10）與小米11 Lite（A13）差異。">
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <div class="header-content">
-                <h1>老手機通過 Play Integrity 自救指南</h1>
-                <p class="subtitle">讓 root / 改機的舊機重新跑得動銀行・錢包・串流 App — 2026 版</p>
-            </div>
-        </header>
+    <div class="scroll-progress" aria-hidden="true"></div>
 
-        <section class="card warning-section">
-            <h2>🎯 這份指南在幹嘛</h2>
-            <p>舊手機原廠停更後，裝自訂 ROM 補安全性更新、或 root 來除惡意預載，本身能<strong>提升</strong>安全；但解鎖 bootloader 會讓 <strong>Play Integrity</strong> 認證失敗，連帶銀行、Google 錢包、Netflix 等正常 App 拒絕啟動。這份就是把<strong>自己的裝置</strong>重新調到通過認證，好用回這些 App。</p>
-            <div class="important-note">
-                <h4>範圍與界線</h4>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="#top">Play Integrity 自救</a>
+            <div class="topbar-actions"><!-- 搜尋與主題切換由 script.js 注入 --></div>
+        </div>
+    </header>
+
+    <section class="hero" id="top">
+        <p class="kicker">2026 版 · 自用裝置維護</p>
+        <h1>老手機通過 Play Integrity 自救指南</h1>
+        <p class="subtitle">讓 root / 改機的舊機重新跑得動銀行、錢包、串流 App。針對小米8（Android 10）與小米11 Lite 5G NE（Android 13）。</p>
+    </section>
+
+    <div class="layout">
+        <aside class="toc">
+            <nav class="table-of-contents" aria-label="目錄">
+                <p class="toc-title">目錄</p>
                 <ul>
-                    <li>✅ 只處理「通過認證 / 隱藏 root」這一層，目的是自用 App 能跑</li>
-                    <li>✅ 你自己的裝置、合法改機</li>
-                    <li>❌ 不含 GPS 假定位、不含繞過任何遊戲反作弊（那是作弊，不在這）</li>
+                    <li><a href="#intro">這份指南在幹嘛</a></li>
+                    <li><a href="#verdicts">三種 verdict</a></li>
+                    <li><a href="#devices">兩支目標機</a></li>
+                    <li><a href="#stack">標準模組棧</a></li>
+                    <li><a href="#basic">路線 A：過 BASIC</a></li>
+                    <li><a href="#device">路線 B：過 DEVICE</a></li>
+                    <li><a href="#verify">驗證</a></li>
+                    <li><a href="#troubleshoot">故障排除</a></li>
                 </ul>
-            </div>
-        </section>
+            </nav>
+        </aside>
 
-        <nav class="table-of-contents">
-            <h2>📋 目錄</h2>
-            <ul>
-                <li><a href="#verdicts">先搞懂：三種 verdict，你要哪一個</a></li>
-                <li><a href="#devices">兩支目標機：A10 vs A13</a></li>
-                <li><a href="#stack">標準模組棧</a></li>
-                <li><a href="#basic">路線 A：只過 BASIC（最省）</a></li>
-                <li><a href="#device">路線 B：過 DEVICE（含 keybox 難題）</a></li>
-                <li><a href="#verify">驗證</a></li>
-                <li><a href="#troubleshoot">故障排除</a></li>
-            </ul>
-        </nav>
+        <main>
+            <section id="intro" class="card">
+                <h2>這份指南在幹嘛</h2>
+                <p>舊手機原廠停更後，裝自訂 ROM 補安全性更新、或 root 來除惡意預載，本身能<strong>提升</strong>安全；但解鎖 bootloader 會讓 Play Integrity 認證失敗，連帶銀行、Google 錢包、Netflix 等正常 App 拒絕啟動。這份就是把<strong>自己的裝置</strong>重新調到通過認證，好用回這些 App。</p>
+                <ul class="checklist">
+                    <li class="is-yes">只處理「通過認證 / 隱藏 root」這一層，目的是自用 App 能跑</li>
+                    <li class="is-yes">你自己的裝置、合法改機</li>
+                    <li class="is-no">不含 GPS 假定位、不含繞過任何遊戲反作弊（那是作弊，不在這）</li>
+                </ul>
+            </section>
 
-        <section id="verdicts" class="card">
-            <h2>先搞懂：三種 verdict</h2>
-            <p>SafetyNet 已退役，現在全看 <strong>Play Integrity API</strong> 的三級判定。<strong>先確認你的 App 到底要哪一級</strong>，再決定要做到多深 —— 多數銀行只要 BASIC。</p>
-            <ul class="requirements-list">
-                <li><strong>MEETS_BASIC_INTEGRITY</strong>：裝置大致正常。多數銀行/一般 App 只查這個。純軟體模組就能過。</li>
-                <li><strong>MEETS_DEVICE_INTEGRITY</strong>：通過 Google 認證的裝置。較嚴的金融/錢包要這個。</li>
-                <li><strong>MEETS_STRONG_INTEGRITY</strong>：硬體背書（TEE）。少數高安全 App，需有效 keybox。</li>
-            </ul>
-            <div class="warning-note">
-                <p>⚠️ <strong>2025/5 起的關鍵規則</strong>：<code>DEVICE</code> 在 <strong>Android 13+ 要求「bootloader 已上鎖」訊號</strong>。root 必須解鎖 → A13 想拿 DEVICE 得靠 TrickyStore 偽裝上鎖 + 有效 keybox。A12 以下不受此限，DEVICE 好拿很多。</p>
-            </div>
-        </section>
+            <section id="verdicts" class="card">
+                <h2>先搞懂：三種 verdict</h2>
+                <p>SafetyNet 已退役，現在全看 Play Integrity API 的三級判定。<strong>先確認你的 App 到底要哪一級</strong>，再決定要做到多深 —— 多數銀行只要 BASIC。</p>
+                <ul class="deflist">
+                    <li><code>MEETS_BASIC_INTEGRITY</code><span>裝置大致正常。多數銀行 / 一般 App 只查這個。純軟體模組就能過。</span></li>
+                    <li><code>MEETS_DEVICE_INTEGRITY</code><span>通過 Google 認證的裝置。較嚴的金融 / 錢包要這個。</span></li>
+                    <li><code>MEETS_STRONG_INTEGRITY</code><span>硬體背書（TEE）。少數高安全 App，需有效 keybox。</span></li>
+                </ul>
+                <div class="note note--warn">
+                    <p class="note-label">2025/5 起的關鍵規則</p>
+                    <p><code>DEVICE</code> 在 <strong>Android 13+ 要求「bootloader 已上鎖」訊號</strong>。root 必須解鎖，所以 A13 想拿 DEVICE 得靠 TrickyStore 偽裝上鎖加上有效 keybox。A12 以下不受此限，DEVICE 好拿很多。</p>
+                </div>
+            </section>
 
-        <section id="devices" class="card">
-            <h2>兩支目標機難度不同</h2>
-            <ul class="test-results">
-                <li><strong>小米8（Android 10）</strong>：不受上鎖新規卡。<code>BASIC</code> 輕鬆，<code>DEVICE</code> 多半靠 Play Integrity Fix 的指紋偽裝就到。</li>
-                <li><strong>小米11 Lite 5G NE（Android 13）</strong>：受 2025/5 規則限制。<code>BASIC</code> 輕鬆；<code>DEVICE</code> 要 TrickyStore + 一把<strong>還活著的</strong> keybox，且 keybox 被 Google 撤銷就失效，本質不穩定。</li>
-            </ul>
-        </section>
+            <section id="devices" class="card">
+                <h2>兩支目標機難度不同</h2>
+                <div class="table-scroll">
+                    <table class="cmp">
+                        <thead>
+                            <tr><th>verdict</th><th>小米8 · A10</th><th>小米11 Lite · A13</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><th>BASIC</th><td><span class="tag tag--pass">易</span> PIF 單獨搞定</td><td><span class="tag tag--pass">易</span> PIF 單獨搞定</td></tr>
+                            <tr><th>DEVICE</th><td><span class="tag tag--warn">中</span> 不受上鎖新規卡，PIF 指紋多半夠</td><td><span class="tag tag--fail">難</span> 要 TrickyStore 偽裝上鎖 + 有效 keybox，會隨撤銷失效</td></tr>
+                            <tr><th>STRONG</th><td><span class="tag tag--fail">難</span> 要 TrickyStore + 有效 keybox</td><td><span class="tag tag--fail">難</span> 要 TrickyStore + 有效 keybox</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
-        <section id="stack" class="card">
-            <h2>標準模組棧（2026 維護中版本）</h2>
-            <ul class="requirements-list">
-                <li><strong>Magisk 28+</strong>（含 Zygisk）— root 與模組框架。<a href="https://github.com/topjohnwu/Magisk/releases/latest" target="_blank">repo</a></li>
-                <li><strong>Shamiko</strong> — 隱藏 root；DenyList 設好、但 Magisk 的「強制執行拒絕清單」要<strong>關掉</strong>讓 Shamiko 接手。<a href="https://github.com/LSPosed/LSPosed.github.io/releases" target="_blank">repo</a></li>
-                <li><strong>Play Integrity Fix（維護分支）</strong> — 過 BASIC，A10 多半也過 DEVICE。<a href="https://github.com/osm0sis/PlayIntegrityFork" target="_blank">osm0sis/PlayIntegrityFork</a> 或 <a href="https://github.com/KOWX712/PlayIntegrityFix" target="_blank">KOWX712/PlayIntegrityFix</a></li>
-                <li><strong>TrickyStore + keybox.xml</strong> — <em>只有</em> A13 要 DEVICE、或要 STRONG 才加。<a href="https://github.com/5ec1cff/TrickyStore" target="_blank">repo</a></li>
-            </ul>
-            <p>前置：已解鎖 bootloader、電腦裝好 ADB（Mac：<code>brew install android-platform-tools</code>）。</p>
-        </section>
+            <section id="stack" class="card">
+                <h2>標準模組棧（2026 維護中版本）</h2>
+                <ul class="linklist">
+                    <li><strong>Magisk 28+</strong>（含 Zygisk）— root 與模組框架。<a href="https://github.com/topjohnwu/Magisk/releases/latest" target="_blank" rel="noopener">repo</a></li>
+                    <li><strong>Shamiko</strong> — 隱藏 root；DenyList 設好，但 Magisk 的「強制執行拒絕清單」要<strong>關掉</strong>讓 Shamiko 接手。<a href="https://github.com/LSPosed/LSPosed.github.io/releases" target="_blank" rel="noopener">repo</a></li>
+                    <li><strong>Play Integrity Fix（維護分支）</strong> — 過 BASIC，A10 多半也過 DEVICE。<a href="https://github.com/osm0sis/PlayIntegrityFork" target="_blank" rel="noopener">osm0sis/PlayIntegrityFork</a> 或 <a href="https://github.com/KOWX712/PlayIntegrityFix" target="_blank" rel="noopener">KOWX712</a></li>
+                    <li><strong>TrickyStore + keybox.xml</strong> — <em>只有</em> A13 要 DEVICE、或要 STRONG 才加。<a href="https://github.com/5ec1cff/TrickyStore" target="_blank" rel="noopener">repo</a></li>
+                </ul>
+                <p class="muted">前置：已解鎖 bootloader、電腦裝好 ADB（Mac：<code>brew install android-platform-tools</code>）。</p>
+            </section>
 
-        <section id="basic" class="card">
-            <h2>路線 A：只過 BASIC（先試這條）</h2>
-            <p>很多人卡關只是因為一上來就上 keybox。<strong>先用最省的：</strong></p>
-            <ol class="install-order">
-                <li>Magisk 裝好、確認 <strong>Zygisk = 開</strong>，重啟。</li>
-                <li>裝 <strong>Play Integrity Fix</strong> 模組，重啟。</li>
-                <li>Magisk → 設定 → <strong>強制執行拒絕清單：關</strong>；裝 <strong>Shamiko</strong>，重啟。</li>
-                <li><strong>配置拒絕清單</strong>勾選會檢測的對象：Google Play 服務、Play 商店、以及你要用的那個銀行/App。</li>
-                <li>Magisk → 設定 → <strong>隱藏 Magisk 應用程式</strong>（給隨機名稱）。</li>
-            </ol>
-            <p>清一次 GMS 快取讓判定重跑：</p>
-            <div class="code-section">
-                <pre><code>adb shell pm clear com.google.android.gms
+            <section id="basic" class="card">
+                <h2>路線 A：只過 BASIC（先試這條）</h2>
+                <p>很多人卡關只是因為一上來就上 keybox。先用最省的：</p>
+                <ol class="steps">
+                    <li>Magisk 裝好，確認 <strong>Zygisk = 開</strong>，重啟。</li>
+                    <li>裝 <strong>Play Integrity Fix</strong> 模組，重啟。</li>
+                    <li>Magisk → 設定 → <strong>強制執行拒絕清單：關</strong>；裝 <strong>Shamiko</strong>，重啟。</li>
+                    <li><strong>配置拒絕清單</strong>勾選會檢測的對象：Google Play 服務、Play 商店、以及你要用的那個銀行 App。</li>
+                    <li>Magisk → 設定 → <strong>隱藏 Magisk 應用程式</strong>（給隨機名稱）。</li>
+                </ol>
+                <p>清一次 GMS 快取讓判定重跑：</p>
+                <div class="code-section">
+                    <pre><code>adb shell pm clear com.google.android.gms
 adb shell pm clear com.android.vending</code></pre>
-            </div>
-            <p>測一下（見下方驗證）。<strong>過 BASIC 且你的 App 能用 → 就停在這，不用碰 keybox。</strong></p>
-        </section>
+                </div>
+                <p>測一下（見下方驗證）。<strong>過 BASIC 且你的 App 能用，就停在這，不用碰 keybox。</strong></p>
+            </section>
 
-        <section id="device" class="card">
-            <h2>路線 B：要過 DEVICE</h2>
+            <section id="device" class="card">
+                <h2>路線 B：要過 DEVICE</h2>
 
-            <h3>小米8（A10）</h3>
-            <p>通常路線 A 的 PIF 指紋就能順帶過 DEVICE。若沒過，重生一份指紋：</p>
-            <div class="code-section">
-                <pre><code># PlayIntegrityFork：重生 fingerprint（模組目錄名以實際為準）
+                <h3>小米8（A10）</h3>
+                <p>通常路線 A 的 PIF 指紋就能順帶過 DEVICE。若沒過，重生一份指紋：</p>
+                <div class="code-section">
+                    <pre><code># 重生 fingerprint（模組目錄名以實際為準）
 adb shell su -c "cd /data/adb/modules/playintegrityfork && rm -f custom.pif.json"
 # 再開 Magisk → 模組 → PlayIntegrityFork → 動作按鈕，重新產生</code></pre>
-            </div>
+                </div>
 
-            <h3>小米11 Lite（A13）</h3>
-            <p>受「上鎖才給 DEVICE」限制，要加 TrickyStore 偽裝上鎖 + keybox：</p>
-            <ol>
-                <li>裝 <strong>TrickyStore</strong> 模組，重啟。</li>
-                <li>放入一把<strong>有效（未被撤銷）的</strong> <code>keybox.xml</code> 到 <code>/data/adb/tricky_store/keybox.xml</code>。</li>
-                <li>設定 target 含 <code>com.google.android.gms</code> 與你的目標 App。</li>
-            </ol>
-            <div class="code-section">
-                <pre><code># 確認 keybox 真的放進去了（大小 &gt; 0 才算）
+                <h3>小米11 Lite（A13）</h3>
+                <p>受「上鎖才給 DEVICE」限制，要加 TrickyStore 偽裝上鎖加 keybox：</p>
+                <ol class="steps">
+                    <li>裝 <strong>TrickyStore</strong> 模組，重啟。</li>
+                    <li>放入一把<strong>有效（未被撤銷）的</strong> <code>keybox.xml</code> 到 <code>/data/adb/tricky_store/keybox.xml</code>。</li>
+                    <li>設定 target 含 <code>com.google.android.gms</code> 與你的目標 App。</li>
+                </ol>
+                <div class="code-section">
+                    <pre><code># 確認 keybox 真的放進去了（大小 &gt; 0 才算）
 adb shell su -c "ls -l /data/adb/tricky_store/keybox.xml"</code></pre>
-            </div>
-            <div class="warning-note">
-                <p>⚠️ <strong>keybox 是這條路線唯一的真瓶頸。</strong>它從 OEM 外洩、會被 Google 持續撤銷，今天能過明天可能就失效。A13 的 DEVICE 因此不保證長期穩定 —— 若你的 App 其實只要 BASIC，回路線 A 反而省心。</p>
-            </div>
-        </section>
+                </div>
+                <div class="note note--warn">
+                    <p class="note-label">keybox 是這條路線唯一的真瓶頸</p>
+                    <p>它從 OEM 外洩、會被 Google 持續撤銷，今天能過明天可能就失效。A13 的 DEVICE 因此不保證長期穩定。若你的 App 其實只要 BASIC，回路線 A 反而省心。</p>
+                </div>
+            </section>
 
-        <section id="verify" class="card">
-            <h2>驗證</h2>
-            <ul class="requirements-list">
-                <li><strong>Play Integrity API Checker</strong>（henrikherzig）：<a href="https://play.google.com/store/apps/details?id=com.henrikherzig.playintegritychecker" target="_blank">Play Store</a> —— 一眼看 BASIC / DEVICE / STRONG 各自 PASS/FAIL。</li>
-                <li><strong>Play 商店內建</strong>：Play 商店 → 設定 → 連點「Play 商店版本」7 次 → 一般 → 開發者選項 → 驗證完整性。</li>
-            </ul>
-            <p>檢查模組與日誌：</p>
-            <div class="code-section">
-                <pre><code>adb shell su -c "ls -la /data/adb/modules/"
+            <section id="verify" class="card">
+                <h2>驗證</h2>
+                <ul class="linklist">
+                    <li><strong>Play Integrity API Checker</strong>（henrikherzig）<a href="https://play.google.com/store/apps/details?id=com.henrikherzig.playintegritychecker" target="_blank" rel="noopener">Play Store</a> — 一眼看 BASIC / DEVICE / STRONG 各自 PASS / FAIL。</li>
+                    <li><strong>Play 商店內建</strong>：設定 → 連點「Play 商店版本」7 次 → 一般 → 開發者選項 → 驗證完整性。</li>
+                </ul>
+                <p>檢查模組與日誌：</p>
+                <div class="code-section">
+                    <pre><code>adb shell su -c "ls -la /data/adb/modules/"
 adb shell su -c "magisk --denylist ls"
 adb shell su -c "logcat | grep -E '(PIF|TrickyStore)'"</code></pre>
-            </div>
-        </section>
+                </div>
+            </section>
 
-        <section id="troubleshoot" class="card">
-            <h2>故障排除</h2>
-            <ul class="requirements-list">
-                <li><strong>BASIC 都不過</strong>：多半是 Shamiko 沒接手 —— 確認「強制執行拒絕清單」是<strong>關</strong>，且 DenyList 有勾 GMS。</li>
-                <li><strong>BASIC 過、DEVICE 不過（A10）</strong>：重生 PIF 指紋（上面指令），清 GMS 快取再測。</li>
-                <li><strong>DEVICE 不過（A13）</strong>：你的 keybox 可能已被撤銷，換一把；或確認 TrickyStore target 有含 GMS。</li>
-                <li><strong>過幾天又失效</strong>：Google 更新偵測或撤銷 keybox 是常態，更新 PIF 模組 / 換 keybox。</li>
-            </ul>
-        </section>
-
-        <footer class="footer">
-            <p>© 個人技術筆記 — 自用裝置維護參考，工具皆為公開開源專案</p>
-        </footer>
+            <section id="troubleshoot" class="card">
+                <h2>故障排除</h2>
+                <ul class="tlist">
+                    <li><strong>BASIC 都不過</strong>：多半是 Shamiko 沒接手，確認「強制執行拒絕清單」是<strong>關</strong>，且 DenyList 有勾 GMS。</li>
+                    <li><strong>BASIC 過、DEVICE 不過（A10）</strong>：重生 PIF 指紋（上面指令），清 GMS 快取再測。</li>
+                    <li><strong>DEVICE 不過（A13）</strong>：你的 keybox 可能已被撤銷，換一把；或確認 TrickyStore target 有含 GMS。</li>
+                    <li><strong>過幾天又失效</strong>：Google 更新偵測或撤銷 keybox 是常態，更新 PIF 模組 / 換 keybox。</li>
+                </ul>
+            </section>
+        </main>
     </div>
+
+    <footer class="footer">
+        <p>個人技術筆記 · 自用裝置維護參考，工具皆為公開開源專案。</p>
+    </footer>
 
     <script src="script.js"></script>
 </body>
