@@ -37,6 +37,7 @@
                     <li><a href="#device">路線 B：過 DEVICE</a></li>
                     <li><a href="#verify">驗證</a></li>
                     <li><a href="#troubleshoot">故障排除</a></li>
+                    <li><a href="#tools">額外工具</a></li>
                 </ul>
             </nav>
         </aside>
@@ -161,6 +162,23 @@ adb shell su -c "logcat | grep -E '(PIF|TrickyStore)'"</code></pre>
                     <li><strong>DEVICE 不過（A13）</strong>：你的 keybox 可能已被撤銷，換一把；或確認 TrickyStore target 有含 GMS。</li>
                     <li><strong>過幾天又失效</strong>：Google 更新偵測或撤銷 keybox 是常態，更新 PIF 模組 / 換 keybox。</li>
                 </ul>
+            </section>
+
+            <section id="tools" class="card">
+                <h2>額外工具（GitHub 倉庫）</h2>
+                <p class="muted">必備與選用模組的來源。前四個是核心棧；其餘視需求加裝。</p>
+                <ul class="repolist">
+                    <li><strong>Magisk</strong><span>Canary 版 · root 與模組框架</span><a href="https://github.com/topjohnwu/Magisk" target="_blank" rel="noopener">topjohnwu/Magisk</a></li>
+                    <li><strong>ZygiskNext</strong><span>獨立 Zygisk 實作</span><a href="https://github.com/Dr-TSNG/ZygiskNext" target="_blank" rel="noopener">Dr-TSNG/ZygiskNext</a></li>
+                    <li><strong>Shamiko</strong><span>隱藏 root（DenyList 接手）</span><a href="https://github.com/LSPosed/LSPosed.github.io" target="_blank" rel="noopener">LSPosed/LSPosed.github.io</a></li>
+                    <li><strong>TrickyStore</strong><span>偽裝 bootloader 上鎖 + keybox</span><a href="https://github.com/5ec1cff/TrickyStore" target="_blank" rel="noopener">5ec1cff/TrickyStore</a></li>
+                    <li><strong>Tricky-Addon</strong><span>5.0 Pre-release · 核心：自動獲取密鑰</span><a href="https://github.com/KOWX712/Tricky-Addon-Update-Target-List" target="_blank" rel="noopener">KOWX712/Tricky-Addon</a></li>
+                    <li><strong>KSUWebUI</strong><span>Standalone · 核心：補 Action 按鈕不見、提供獨立設定頁</span><a href="https://github.com/rifs8/KSUWebUI" target="_blank" rel="noopener">rifs8/KSUWebUI</a></li>
+                    <li><strong>Play Integrity Fix</strong><span>過 BASIC / DEVICE 指紋偽裝</span><a href="https://github.com/chiteroman/PlayIntegrityFix" target="_blank" rel="noopener">chiteroman/PlayIntegrityFix</a></li>
+                    <li><strong>LSPosed (Mod)</strong><span>Xposed 框架（mywalkb 維護分支）</span><a href="https://github.com/mywalkb/LSPosed_mod" target="_blank" rel="noopener">mywalkb/LSPosed_mod</a></li>
+                    <li><strong>Hide My Applist</strong><span>HMA · 對指定 App 隱藏其他 App 清單</span><a href="https://github.com/Dr-TSNG/Hide-My-Applist" target="_blank" rel="noopener">Dr-TSNG/Hide-My-Applist</a></li>
+                </ul>
+                <p class="muted">注意：Magisk 的 root-hiding 可走 Shamiko 或 ZygiskNext + DenyList，兩條路擇一即可，不必全裝。PIF 另有維護分支 <a href="https://github.com/osm0sis/PlayIntegrityFork" target="_blank" rel="noopener">osm0sis/PlayIntegrityFork</a>，與上面原版擇一。</p>
             </section>
         </main>
     </div>
