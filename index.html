@@ -34,6 +34,7 @@
                     <li><a href="#devices">兩支目標機</a></li>
                     <li><a href="#stack">標準模組棧</a></li>
                     <li><a href="#order">安裝順序</a></li>
+                    <li><a href="#hma">進階隱藏 HMA</a></li>
                     <li><a href="#basic">路線 A：過 BASIC</a></li>
                     <li><a href="#device">路線 B：過 DEVICE</a></li>
                     <li><a href="#verify">驗證</a></li>
@@ -111,6 +112,35 @@
                 <div class="note note--info">
                     <p class="note-label">為什麼是這個順序</p>
                     <p>先有 root 與隱藏（1～4）才談得上認證偽裝（5 以後）；DenyList 要在裝 Shamiko 前設好，Shamiko 才接得到。每步之間重啟，避免模組狀態沒寫定就疊下一個。</p>
+                </div>
+            </section>
+
+            <section id="hma" class="card">
+                <h2>進階隱藏：Hide My Applist</h2>
+                <p>少數金融 App 會列舉「已安裝 App 清單」找 root 管理器。HMA（LSPosed 模組）對你指定的 App 假裝這些工具不存在。<strong>一般 App 用路線 A 就夠，不會掃清單的就不必裝 HMA。</strong></p>
+
+                <h3>設定步驟</h3>
+                <ol class="steps">
+                    <li>LSPosed → 模組 → <strong>Hide My Applist</strong> → 啟用，作用範圍只勾<strong>要被騙的目標 App</strong>（你的銀行 / 錢包 App）。改完強制停止再重開該 App 才生效。</li>
+                    <li>開 HMA App → 建立一個<strong>黑名單（blacklist）範本</strong>。</li>
+                    <li>把下列要藏的 App 加進黑名單，再把範本<strong>套用到目標 App</strong>。</li>
+                </ol>
+
+                <h3>黑名單該藏哪些</h3>
+                <ul class="checklist">
+                    <li class="is-yes">Magisk（改名 / 隱藏後的那個圖示）</li>
+                    <li class="is-yes">LSPosed Manager</li>
+                    <li class="is-yes">TrickyStore</li>
+                    <li class="is-yes">KSUWebUI</li>
+                    <li class="is-yes">Tricky-Addon（若桌面有獨立圖示）</li>
+                    <li class="is-yes">Hide My Applist 本身</li>
+                    <li class="is-yes">其他 root 工具：root 檔案管理器、終端機、root 檢測器等</li>
+                    <li class="is-no">Shamiko / PIF / ZygiskNext 等是「Magisk 模組」、沒有獨立 App，不在這層，不用加</li>
+                </ul>
+
+                <div class="note note--info">
+                    <p class="note-label">關於 Hide Mock Location</p>
+                    <p>那是用來隱藏「已設定模擬定位來源」的工具，只有在<strong>假造 GPS</strong> 時才需要。本指南只做通過認證 / 隱藏 root，不含定位偽裝，所以不涵蓋它的設定。</p>
                 </div>
             </section>
 
