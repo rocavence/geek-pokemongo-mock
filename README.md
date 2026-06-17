@@ -13,16 +13,16 @@
 
 ## 🚀 線上預覽
 
-訪問 GitHub Pages: [https://rocavence.github.io/xiaomi8-pokemongo-mock-2025](https://rocavence.github.io/xiaomi8-pokemongo-mock-2025)
+訪問 GitHub Pages: [https://rocavence.github.io/geek-pokemongo-mock](https://rocavence.github.io/geek-pokemongo-mock)
 
 ## 📦 本地運行
 
 ```bash
 # 克隆專案
-git clone https://github.com/rocavence/xiaomi8-pokemongo-mock-2025.git
+git clone https://github.com/rocavence/geek-pokemongo-mock.git
 
 # 進入目錄
-cd xiaomi8-pokemongo-mock-2025
+cd geek-pokemongo-mock
 
 # 使用任何靜態服務器運行，例如：
 python -m http.server 8000
@@ -43,7 +43,7 @@ npx serve .
 ## 📁 專案結構
 
 ```
-xiaomi8-pokemongo-mock-2025/
+geek-pokemongo-mock/
 ├── index.html          # 主頁面
 ├── style.css           # 樣式文件
 ├── script.js           # 腳本文件
